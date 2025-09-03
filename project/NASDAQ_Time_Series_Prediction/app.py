@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from PIL import Image
-import plotly.express as px
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 st.set_page_config(layout="wide", page_title="NASDAQ Analysis Dashboard", initial_sidebar_state="expanded")
 
@@ -63,53 +64,6 @@ def load_data():
 df, images = load_data()
 
 if df is not None and images is not None:
-    fig = px.line(
-        df, 
-        x='Date', 
-        y='Close/Last', 
-        title='Interactive NASDAQ Historical Price Analysis'
-    )
-
-    fig.update_layout(
-        template='plotly_white',
-        plot_bgcolor="white", 
-        paper_bgcolor="white",
-        height = 800,
-        title=dict(
-            text="Interactive NASDAQ Historical Price Analysis",
-            font=dict(size=22, color="black"),
-            x=0.5,
-            xanchor="center"
-        ),
-        xaxis_title="Date",
-        yaxis_title="Closing Price (USD)",
-        xaxis=dict(
-            rangeselector=dict(
-                buttons=list([
-                    dict(count=1, label="1m", step="month", stepmode="backward"),
-                    dict(count=6, label="6m", step="month", stepmode="backward"),
-                    dict(count=1, label="YTD", step="year", stepmode="todate"),
-                    dict(count=1, label="1y", step="year", stepmode="backward"),
-                    dict(step="all")
-                ])
-            ),
-            rangeslider=dict(visible=True),
-            type="date",
-            showline=True,
-            linecolor="black",
-            tickfont=dict(color="black"),
-            titlefont=dict(color="black"),
-            gridcolor="lightgray"
-        ),
-        yaxis=dict(
-            showline=True,
-            linecolor="black",
-            tickfont=dict(color="black"),
-            titlefont=dict(color="black"),
-            gridcolor="lightgray"
-        )
-    )
-    
     st.title("NASDAQ Financial Analysis Report")
     st.header("Executive Summary")
     st.markdown("""
@@ -128,42 +82,31 @@ if df is not None and images is not None:
     st.markdown("---")
     st.header("Market Overview & Technical Analysis")
     st.subheader("NASDAQ Price Trend")
-    st.plotly_chart(fig, use_container_width=True)
+
+    # --- Matplotlib Plot ---
+    fig, ax = plt.subplots(figsize=(12,6))
+    ax.plot(df['Date'], df['Close/Last'], color='blue', label='NASDAQ Close Price')
+    ax.set_title("NASDAQ Historical Closing Prices", fontsize=16)
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Closing Price (USD)")
+    ax.grid(True, linestyle='--', alpha=0.5)
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+    plt.xticks(rotation=45)
+    ax.legend()
+    st.pyplot(fig)
+
     st.markdown("""
     This chart displays the historical closing prices of the NASDAQ index.
-    **Inference:** The visualization allows for dynamic exploration of long-term growth trends, volatility periods, and the impact of major market events by zooming into specific date ranges.
+    **Inference:** The visualization allows for dynamic exploration of long-term growth trends, volatility periods, and the impact of major market events.
     """)
 
     st.subheader("NASDAQ Price Trend & Moving Averages")
     st.image(images['price_trend'], caption="NASDAQ Closing Price with 50-day and 200-day Moving Averages.", use_column_width=True)
-    st.markdown("""
-    ### Key Insight for Stakeholders
-    The NASDAQ index shows clear trend patterns with periods of sustained growth interrupted by significant corrections. The crossover points between the 50-day and 200-day moving averages often signal important market regime changes that can guide investment timing decisions.
-    ### Assumptions & Limitations
-    - Past performance does not guarantee future results
-    - Moving averages are lagging indicators and may not capture sudden market shifts
-    - The analysis does not account for external factors like economic policy changes or global events
-    """)
-
     st.subheader("Average Monthly NASDAQ Returns")
     st.image(images['monthly_returns'], caption="Seasonality in NASDAQ returns.", use_column_width=True)
-    st.markdown("""
-    ### Key Insight for Stakeholders
-    The monthly returns analysis reveals clear seasonal patterns in NASDAQ performance. Certain months consistently show stronger returns, which can be leveraged for timing investment decisions and portfolio rebalancing.
-    ### Assumptions & Limitations
-    - Monthly averages may mask significant intra-month volatility
-    - Historical seasonal patterns may not persist in the future due to changing market dynamics
-    - The analysis does not account for specific events that may have influenced returns in particular years
-    """)
-
     st.subheader("Comprehensive Time Series Analysis")
     st.image(images['time_series'], caption="Price, Daily Returns, Volatility, and RSI.", use_column_width=True)
-    st.markdown("""
-    **Inference:**
-    - **Daily Returns:** The returns hover around zero, with periods of high volatility (volatility clustering). This is typical for financial assets.
-    - **10-Day Rolling Volatility:** This chart quantifies the risk. Spikes in volatility correspond to periods of market uncertainty.
-    - **RSI Indicator:** The Relative Strength Index (RSI) oscillates, indicating periods where the asset is potentially overbought (>70) or oversold (<30).
-    """)
 
     st.markdown("---")
     st.header("Predictive Modeling Comparison")
@@ -176,62 +119,21 @@ if df is not None and images is not None:
         - **RMSE:** 236.71
         - **MAE:** 164.02
         - **R2 Score:** 0.989
-        
-        **Inference:** The Linear Regression model captures the general trend but struggles with non-linear market movements, making it a basic baseline model.
         """)
     with col2:
-        st.subheader("LSTM (Long Short-Term Memory) Model")
+        st.subheader("LSTM Model")
         st.image(images['lstm_prediction'], caption="Actual vs. Predicted Prices using LSTM.", use_column_width=True)
         st.markdown("""
         **Metrics:**
         - **RMSE:** 366.23
         - **MAE:** 283.05
         - **R2 Score:** 0.993
-
-        **Inference:** The LSTM model tracks actual prices more closely, effectively capturing complex patterns due to its memory capabilities, making it superior for forecasting.
         """)
-    
+
     st.subheader("Comparative Analysis of Models")
     st.markdown("""
-    - **R2 Score (Coefficient of Determination):** The LSTM model has a slightly higher R2 Score (0.993) compared to the Linear Regression model (0.989). This indicates that the LSTM model explains approximately 99.3% of the variance in the NASDAQ price, making it marginally better in terms of explanatory power.
-    - **Error Metrics (RMSE & MAE):** Contrary to the R2 score, the Linear Regression model shows significantly lower error metrics (RMSE: 236.71, MAE: 164.02) than the LSTM model (RMSE: 366.23, MAE: 283.05). A lower RMSE and MAE mean the average prediction error is smaller.
-    
-    **Conclusion:** While the LSTM model appears to follow the price curve more closely and has a better R2 score, the Linear Regression model is demonstrably more accurate in its predictions, with a substantially lower average error. This suggests that for this dataset, the simpler model provides a better balance of fit and accuracy, and the more complex LSTM model may be overfitting or requires further tuning.
+    While the LSTM model has a slightly higher R2 score, the Linear Regression model shows lower RMSE and MAE, suggesting it provides more accurate predictions for this dataset.
     """)
 
-    st.markdown("---")
-    st.header("LSTM Model Performance Analysis")
-    st.subheader("Scenario Comparison: Original vs. Simpler LSTM")
-    st.image(images['lstm_comparison'], caption="Comparing two LSTM model configurations.", use_column_width=True)
-    st.markdown("**Inference:** The simpler LSTM model shows a lower Root Mean Squared Error (RMSE), indicating that more complexity is not always better and that this model generalizes more effectively.")
-    
-    st.subheader("Distribution of Bootstrapped RMSE")
-    st.image(images['bootstrap_dist'], caption="Assessing the stability of the LSTM model's performance.", use_column_width=True)
-    st.markdown("**Inference:** Bootstrapping provides a 95% Confidence Interval for the model's error, adding statistical rigor and giving a reliable range for its expected performance.")
-
-    st.markdown("---")
-    st.header("Scenario & Sensitivity Analysis")
-    st.subheader("Sensitivity of Risk-Adjusted Return")
+    st.subheader("Scenario & Sensitivity Analysis")
     st.image(images['sensitivity'], caption="Tornado Chart for Sensitivity Analysis.", use_column_width=True)
-    st.markdown("**Inference:** The tornado chart reveals that 'High Volatility' scenarios have the largest negative impact on risk-adjusted returns, highlighting volatility management as a key strategic focus.")
-
-    st.markdown("---")
-    st.header("Strategic Recommendations & Risks")
-    st.subheader("Decision Implications")
-    st.markdown("""
-    Based on the analysis, the following actions are recommended:
-    1.  **Strategic Timing**: Consider the seasonal patterns identified in monthly returns for portfolio rebalancing and entry/exit decisions.
-    2.  **Risk Management**: Monitor the 10-day rolling volatility as an early warning indicator for potential spikes in risk.
-    3.  **Diversification**: The sensitivity analysis shows significant impact from market regime changes, highlighting the importance of diversification across asset classes.
-    4.  **Hedging Strategy**: During periods when the 50-day moving average crosses below the 200-day moving average, consider implementing hedging strategies to protect against potential downside risk.
-    5.  **Regular Review**: Market conditions can change rapidly. Quarterly reviews of this analysis with updated data are recommended to ensure strategies remain aligned with current market dynamics.
-    """)
-    st.subheader("Assumptions & Risks")
-    st.markdown("""
-    - **Historical Patterns**: This analysis assumes that historical patterns provide meaningful insights for future market behavior.
-    - **Market Efficiency**: It is assumed that markets are generally efficient but may experience periods of inefficiency that create opportunities.
-    - **External Factors**: The analysis does not explicitly account for external shocks such as geopolitical events, policy changes, or black swan events.
-    - **Data Quality**: The analysis is only as good as the underlying data. Any errors or biases in the data will affect the conclusions.
-    - **Model Limitations**: Technical indicators like moving averages have known limitations and can generate false signals, particularly in choppy markets.
-    """)
-
