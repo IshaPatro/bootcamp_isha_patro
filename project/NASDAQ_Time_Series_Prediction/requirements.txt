@@ -10,7 +10,7 @@ python-dotenv==1.0.1
 cycler
 kiwisolver
 fonttools
-Pillow==9.0.1
+# pillow==9.0.1
 # arch==6.4.1
 # xgboost==1.7.6
 # tensorflow==2.15.0
