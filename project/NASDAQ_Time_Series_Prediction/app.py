@@ -10,29 +10,52 @@ st.set_page_config(layout="wide", page_title="NASDAQ Analysis Dashboard", initia
 
 st.markdown("""
 <style>
-.main {
-    background-color: #FFFFFF;
-    color: #0E1117;
+.main, .block-container, .stApp {
+    background-color: #FFFFFF !important;
+    color: #0E1117 !important;
 }
-.css-1d391kg {
-    display: none;
+.stApp > header {
+    background-color: transparent !important;
 }
-h1, h2, h3, h4, h5, h6 {
-    color: #0E1117;
+
+.css-1d391kg, .css-1lcbmhc {
+    background-color: #F0F2F6 !important;
 }
-.st-emotion-cache-16txtl3 {
-    color: #0E1117;
+
+h1, h2, h3, h4, h5, h6, p, div, span {
+    color: #0E1117 !important;
 }
+
+.st-emotion-cache-16txtl3, .st-emotion-cache-1y4p8pa {
+    color: #0E1117 !important;
+}
+
 .st-expander {
     border-color: #CCCCCC !important;
     border-radius: 0.5rem;
+    background-color: #FFFFFF !important;
 }
+
 .st-expander header {
     color: #0E1117 !important;
-    background-color: #F0F2F6;
+    background-color: #F0F2F6 !important;
 }
+
+.markdown-text-container {
+    color: #0E1117 !important;
+}
+
+/* Horizontal rules */
 hr {
     border-top: 1px solid #0E1117 !important;
+}
+
+* {
+    background-color: inherit !important;
+}
+
+html, body {
+    background-color: #FFFFFF !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -40,10 +63,8 @@ hr {
 @st.cache_data
 def load_data():
     try:
-        # Get the directory of the current script
         script_dir = os.path.dirname(os.path.abspath(__file__))
         
-        # Define image paths relative to script directory
         image_paths = {
             'price_trend': os.path.join(script_dir, 'deliverables', 'images', 'nasdaq_price_trend.png'),
             'time_series': os.path.join(script_dir, 'deliverables', 'images', 'nasdaq_time_series_analysis.png'),
@@ -54,8 +75,6 @@ def load_data():
             'bootstrap_dist': os.path.join(script_dir, 'deliverables', 'images', 'nasdaq_distribution_of_bootstrap.png'),
             'sensitivity': os.path.join(script_dir, 'deliverables', 'images', 'tornado_sensitivity.png')
         }
-        
-        # Load images only if they exist
         images = {}
         for key, path in image_paths.items():
             if os.path.exists(path):
@@ -63,7 +82,6 @@ def load_data():
             else:
                 st.warning(f"Image not found: {path}")
         
-        # Load CSV data
         csv_path = os.path.join(script_dir, 'data', 'HistoricalData.csv')
         if os.path.exists(csv_path):
             df = pd.read_csv(csv_path)
@@ -124,15 +142,15 @@ else:
 
 if 'price_trend' in images:
     st.subheader("NASDAQ Price Trend & Moving Averages")
-    st.image(images['price_trend'], caption="NASDAQ Closing Price with 50-day and 200-day Moving Averages.", use_column_width=True)
+    st.image(images['price_trend'], caption="NASDAQ Closing Price with 50-day and 200-day Moving Averages.", use_container_width=True)
 
 if 'monthly_returns' in images:
     st.subheader("Average Monthly NASDAQ Returns")
-    st.image(images['monthly_returns'], caption="Seasonality in NASDAQ returns.", use_column_width=True)
+    st.image(images['monthly_returns'], caption="Seasonality in NASDAQ returns.", use_container_width=True)
 
 if 'time_series' in images:
     st.subheader("Comprehensive Time Series Analysis")
-    st.image(images['time_series'], caption="Price, Daily Returns, Volatility, and RSI.", use_column_width=True)
+    st.image(images['time_series'], caption="Price, Daily Returns, Volatility, and RSI.", use_container_width=True)
 
 st.markdown("---")
 st.header("Predictive Modeling Comparison")
@@ -140,7 +158,7 @@ col1, col2 = st.columns(2)
 with col1:
     st.subheader("Linear Regression Model")
     if 'linear_regression' in images:
-        st.image(images['linear_regression'], caption="Actual vs. Predicted Prices using Linear Regression.", use_column_width=True)
+         st.image(images['linear_regression'], caption="Actual vs. Predicted Prices using Linear Regression.", use_container_width=True)
     st.markdown("""
     **Metrics:**
     - **RMSE:** 236.71
@@ -150,7 +168,7 @@ with col1:
 with col2:
     st.subheader("LSTM Model")
     if 'lstm_prediction' in images:
-        st.image(images['lstm_prediction'], caption="Actual vs. Predicted Prices using LSTM.", use_column_width=True)
+         st.image(images['lstm_prediction'], caption="Actual vs. Predicted Prices using LSTM.", use_container_width=True)
     st.markdown("""
     **Metrics:**
     - **RMSE:** 366.23
@@ -165,4 +183,4 @@ While the LSTM model has a slightly higher R2 score, the Linear Regression model
 
 if 'sensitivity' in images:
     st.subheader("Scenario & Sensitivity Analysis")
-    st.image(images['sensitivity'], caption="Tornado Chart for Sensitivity Analysis.", use_column_width=True)
+    st.image(images['sensitivity'], caption="Tornado Chart for Sensitivity Analysis.", use_container_width=True)
